@@ -5,51 +5,66 @@ PipeR=HeadR+HoleR;
 TubeLength=90;
 Thickness=3;
 InnerR = R-Thickness;
+FN=60;
+
+module BottomPipe() {
+	linear_extrude(0.1) difference() {
+		intersection() {
+			square([R,R]);
+			circle(R);
+			polygon([[0,0], [R,0],
+				[cos(30)*(R+2),sin(30)*(R+2)]]);
+		}
+		circle(InnerR);
+	}
+}
+
+module oneSidePipe() {
+		assign(Rm = R-0.5)
+		hull() {
+			translate([PipeR, 0, TubeLength]) sphere(HeadR, center=true, $fn=FN);
+BottomPipe();
+//			translate([Rm*cos(30), Rm*sin(30), 0]) rotate(30) cube(1, center=true);
+		}
+}
+
+module Pipe() {
+	oneSidePipe();
+	mirror([1,-1,0]) oneSidePipe();
+}
 
 module Head() {
 	union() {
 		translate([0,0,TubeLength])
 		difference()
 		{
-			rotate_extrude($fn=50) translate([PipeR, 0, 0]) circle(r = HeadR);
+			rotate_extrude($fn=FN) translate([PipeR, 0, 0]) circle(r = HeadR);
 			translate([0,0,-R/2]) cube(R);
 		}
 		
-		hull() {
-			translate([PipeR, 0, TubeLength]) sphere(HeadR, center=true, $fn=50);
-			translate([PipeR, 0, 0]) sphere(HeadR, center=true, $fn=50);
-		}
-		
-		hull() {
-				translate([0, PipeR, TubeLength]) sphere(HeadR, center=true, $fn=50);
-				translate([0, PipeR, 0]) sphere(HeadR, center=true, $fn=50);
-		}
+		Pipe();
 	}
 }
 
-module oneSidePipe(FN=50) {
-		hull() {
-			translate([PipeR, 0, TubeLength]) sphere(HeadR, center=true, $fn=FN);
-			translate([PipeR*cos(30), PipeR*sin(30), 0]) rotate(30) cube(1, center=true);
-		}
+module TubeBodyNegative() {
+	assign(ConicalHeight=(TubeLength-InnerR)*tan(60))
+	union() {
+		translate([0,0,ConicalHeight]) cylinder(r1=InnerR, r2=0, InnerR/cos(60));
+		cylinder(r=InnerR, ConicalHeight + 0.1, $fn=FN);
+	}
 }
-
-module Pipe(FN=50) {
-	oneSidePipe(FN);
-	mirror([1,-1,0]) oneSidePipe(FN);
-}
-
-Pipe(10);
 
 module TubeBody() {
-	assign(ConicalHeight=TubeLength-InnerR*tan(60))
-	union() {
-		translate([0,0,ConicalHeight]) cylinder(r1=InnerR, r2=0, InnerR/cos(60) + HeadR);
-		cylinder(r=InnerR, ConicalHeight, $fn=50);
+	difference() {
+		cylinder(r=R, TubeLength);
+		TubeBodyNegative();
+		cube([R+1, R+1, TubeLength+1]);
+		
 	}
 }
 
-//render(convexity = 2) difference() {
-//	Head();
-//  TubeBody();
-//}
+
+render(convexity = 2) {
+	Head();
+	TubeBody();
+}
