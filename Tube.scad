@@ -5,7 +5,7 @@ PipeR=HeadR+HoleR;
 TubeLength=90;
 Thickness=3;
 InnerR = R-Thickness;
-FN=60;
+FN=80;
 
 module BottomPipe() {
 	linear_extrude(0.1) difference() {
@@ -23,8 +23,7 @@ module oneSidePipe() {
 		assign(Rm = R-0.5)
 		hull() {
 			translate([PipeR, 0, TubeLength]) sphere(HeadR, center=true, $fn=FN);
-BottomPipe();
-//			translate([Rm*cos(30), Rm*sin(30), 0]) rotate(30) cube(1, center=true);
+			BottomPipe();
 		}
 }
 
@@ -33,38 +32,58 @@ module Pipe() {
 	mirror([1,-1,0]) oneSidePipe();
 }
 
+module HeadSupport() {
+	rotate_extrude() translate([R-1,0,0]) rotate(90) polygon(points=[[0,0],[(HeadR+4)*1.33,0],[(HeadR+4)*1.33, (HeadR+4)]]);
+
+}
+
 module Head() {
 	union() {
 		translate([0,0,TubeLength])
 		difference()
 		{
-			rotate_extrude($fn=FN) translate([PipeR, 0, 0]) circle(r = HeadR);
-			translate([0,0,-R/2]) cube(R);
+			union()	{
+					rotate_extrude($fn=FN) translate([PipeR, 0, 0]) circle(r = HeadR);
+					translate([0,0,-(HeadR+3)*1.33-4.2]) HeadSupport();
+			}
+			translate([0,0,-R]) cube([R,R,2*R]);
 		}
 		
 		Pipe();
 	}
 }
 
-module TubeBodyNegative() {
-	assign(ConicalHeight=(TubeLength-InnerR)*tan(60))
-	union() {
-		translate([0,0,ConicalHeight]) cylinder(r1=InnerR, r2=0, InnerR/cos(60));
-		cylinder(r=InnerR, ConicalHeight + 0.1, $fn=FN);
-	}
-}
 
 module TubeBody() {
 	difference() {
-		cylinder(r=R, TubeLength);
-		TubeBodyNegative();
+		cylinder(r=R, TubeLength, $fn=FN);
+		cylinder(r=InnerR, TubeLength, $fn=FN);
 		cube([R+1, R+1, TubeLength+1]);
-		
 	}
 }
 
+ConnectLength=15;
+RampLength=14;
+Drop=8;
+
+module Thinner() {
+	rotate_extrude($fn=FN)
+	translate([R-Drop-Thickness/2,0,0])
+	rotate(90)
+	minkowski() {
+		circle(Thickness/2, $fn=FN);
+		polygon(points=[[0,0], [0,-0.01],
+			[ConnectLength, -0.01],
+			[ConnectLength+RampLength, -Drop-0.01],
+			[ConnectLength+RampLength,-Drop],
+			[ConnectLength, 0]]);
+	}
+}
 
 render(convexity = 2) {
-	Head();
-	TubeBody();
+	translate([0,0,ConnectLength+RampLength]) {
+		Head();
+		TubeBody();
+	}
+	Thinner();
 }
