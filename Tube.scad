@@ -2,10 +2,15 @@ HoleR=5;
 R=16.5;
 HeadR=(R-HoleR)/2;
 PipeR=HeadR+HoleR;
-TubeLength=90;
+TotalLength=100;
+ConnectLength=18;
+RampLength=14;
+TubeLength=TotalLength-14;
 Thickness=3;
 InnerR = R-Thickness;
-FN=80;
+Drop=8;
+IOR=R-Drop-Thickness/2;
+FN=15;
 
 module BottomPipe() {
 	linear_extrude(0.1) difference() {
@@ -62,13 +67,10 @@ module TubeBody() {
 	}
 }
 
-ConnectLength=15;
-RampLength=14;
-Drop=8;
 
 module Thinner() {
 	rotate_extrude($fn=FN)
-	translate([R-Drop-Thickness/2,0,0])
+	translate([IOR,0,0])
 	rotate(90)
 	minkowski() {
 		circle(Thickness/2, $fn=FN);
@@ -80,10 +82,30 @@ module Thinner() {
 	}
 }
 
+
+module BottomPlant() {
+	difference() {
+		linear_extrude(height = 3)
+		difference() {
+			scale ([0.8,3])	circle(r=28);
+			circle(r=6);
+		}
+		translate([0, -60, -1]) cylinder(r=4, 6);
+		translate([0, 60, -1]) cylinder(r=4, 6);
+	}
+}
+
 render(convexity = 2) {
 	translate([0,0,ConnectLength+RampLength]) {
 		Head();
 		TubeBody();
 	}
-	Thinner();
+	difference() {
+		Thinner();
+		translate([0,0,-2]) cylinder(r=20, 2);
+	}
+	rotate(-90) BottomPlant();
+	//cylinder(r=IOR-2, ConnectLength);
 }
+
+
