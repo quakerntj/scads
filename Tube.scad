@@ -94,7 +94,7 @@ module BottomPlant() {
 		translate([0, 60, -1]) cylinder(r=4, 6);
 	}
 }
-
+/*
 render(convexity = 2) {
 	translate([0,0,ConnectLength+RampLength]) {
 		Head();
@@ -107,5 +107,23 @@ render(convexity = 2) {
 	rotate(-90) BottomPlant();
 	//cylinder(r=IOR-2, ConnectLength);
 }
+*/
+//Thinner();
 
+render(convexity = 2)
+difference() {
+	assign() {
+		cylinder(r=IOR-2.5, ConnectLength+3);
+		translate([0,0,ConnectLength + 3])
+		cylinder(r1=IOR-2.5, r2=IOR-2.5+Drop, RampLength );
+	}
+translate([1, 1, 0])
+cube([IOR+3, IOR+3, RampLength/2+ConnectLength]);
+rotate(90) translate([1, 1, 0])
+cube([IOR+3, IOR+3, RampLength/2+ConnectLength]);
+rotate(180) translate([1, 1, 0])
+cube([IOR+3, IOR+3, RampLength/2+ConnectLength]);
+rotate(270) translate([1, 1, 0])
+cube([IOR+3, IOR+3, RampLength/2+ConnectLength]);
 
+}
