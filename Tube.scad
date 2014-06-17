@@ -94,7 +94,40 @@ module BottomPlant() {
 		translate([0, 60, -1]) cylinder(r=4, 6);
 	}
 }
-/*
+
+module Limiter(edge) {
+	translate([InnerR-edge*sqrt(2)/2,0,RampLength+ConnectLength+edge]) rotate([90]) linear_extrude(height=1) polygon(points=[[0,0],[edge-3,-edge],[edge,-edge],[edge,edge]]);
+}
+
+module Limiters() {
+	rotate(135) Limiter(8);
+	rotate(315) Limiter(8);
+}
+
+
+module WaterStop() {
+	difference() {
+		assign(waterR=IOR-2.5, longer=4, smaller=0.8) {
+			cylinder(r=waterR, ConnectLength+longer);
+			translate([0,0,ConnectLength + longer])
+			cylinder(r1=waterR, r2=(waterR+Drop)*smaller, RampLength*smaller);
+			translate([0,0,ConnectLength + longer + RampLength*smaller])
+			cylinder(r=(waterR+Drop)*smaller, 2);
+		}
+
+		translate([1, 1, 2])
+		cube([IOR+3, IOR+3, ConnectLength+1]);
+		rotate(90) translate([1, 1, 2])
+		cube([IOR+3, IOR+3, ConnectLength+1]);
+		rotate(180) translate([1, 1, 2])
+		cube([IOR+3, IOR+3, ConnectLength+1]);
+		rotate(270) translate([1, 1, 2])
+		cube([IOR+3, IOR+3, ConnectLength+1]);
+
+	}
+}
+
+
 render(convexity = 2) {
 	translate([0,0,ConnectLength+RampLength]) {
 		Head();
@@ -105,25 +138,10 @@ render(convexity = 2) {
 		translate([0,0,-2]) cylinder(r=20, 2);
 	}
 	rotate(-90) BottomPlant();
-	//cylinder(r=IOR-2, ConnectLength);
+	cylinder(r=IOR-2, ConnectLength);
+	Limiters();
+	WaterStop();
+	BottomPlant();
 }
-*/
-//Thinner();
 
-render(convexity = 2)
-difference() {
-	assign() {
-		cylinder(r=IOR-2.5, ConnectLength+3);
-		translate([0,0,ConnectLength + 3])
-		cylinder(r1=IOR-2.5, r2=IOR-2.5+Drop, RampLength );
-	}
-translate([1, 1, 0])
-cube([IOR+3, IOR+3, RampLength/2+ConnectLength]);
-rotate(90) translate([1, 1, 0])
-cube([IOR+3, IOR+3, RampLength/2+ConnectLength]);
-rotate(180) translate([1, 1, 0])
-cube([IOR+3, IOR+3, RampLength/2+ConnectLength]);
-rotate(270) translate([1, 1, 0])
-cube([IOR+3, IOR+3, RampLength/2+ConnectLength]);
 
-}
